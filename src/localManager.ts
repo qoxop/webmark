@@ -1,13 +1,15 @@
-import {setAfterMark, render} from './index';
-import {MarkInfo} from './types'
+import {setAfterMark, render, setMarkTagName, setDefaultClass} from './core';
+import {MarkInfo} from './types';
 
-let pageHashPrefix = 'mark_';
+let pageHashPrefix = 'qoxop_mark_';
 
 interface Config {
     uPageHash?: (href: string) => string,
     pageHashPrefix?: string
     getPageInfo?: () => any,
-
+    markTagName?: string,
+    defaultClassName?: string,
+    [key: string]: any
 }
 const config: Config = {
     pageHashPrefix,
@@ -31,9 +33,19 @@ function getAllMarks() {
     return AllMarkInfosMap[hash];
 }
 
-function setConfig(options: Config) {
-    Object.assign(config, options);
+function setConfig(options: Config = {}) {
+    Object.keys(options).forEach(key => {
+        const value = options[key];
+        if (config[key]) {
+            config[key] = value;
+        } else if (key === 'markTagName') {
+            setMarkTagName(value);
+        } else if (key === 'defaultClassName') {
+            setDefaultClass(value);
+        }
+    })
     pageHashPrefix = config.pageHashPrefix;
+    return config;
 }
 
 function renderAllMarks() {
@@ -69,6 +81,14 @@ function exportToJson() {
         .reduce((dateset, key) => ({...dateset, [key]: localStorage[key]}), {})
 
 }
+// TODO 优化清除页面副作用的方式
+function clearAllMark() {
+    Object.keys(localStorage)
+        .filter(key => key.indexOf(pageHashPrefix) === 0)
+        .forEach(key => localStorage.removeItem(key));
+    window.location.reload();
+}
+
 setAfterMark((mi: MarkInfo) => {
     const {uPageHash, getPageInfo} = config;
     const hash = uPageHash(mi.href);
@@ -85,8 +105,10 @@ setAfterMark((mi: MarkInfo) => {
     window.localStorage.setItem(hash, JSON.stringify(AllMarkInfosMap[hash]))
 })
 export {
-    setConfig,
+    Config,
     delMark,
+    setConfig,
+    exportToJson,
+    clearAllMark,
     renderAllMarks,
-    exportToJson
 }
