@@ -23,7 +23,9 @@
     "babel-plugin-external-helpers": "^6.22.0",
     "gulp": "^4.0.2",
     "gulp-if": "^3.0.0",
+    "gulp-typescript": "^6.0.0-alpha.1",
     "rollup": "^1.32.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
     "through2": "^3.0.1",
     "typescript": "^3.8.3",
     "vinyl": "^2.2.0"
