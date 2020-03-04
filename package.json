@@ -1,8 +1,7 @@
 {
   "name": "webmark",
   "version": "1.0.0",
-  "description": "网页文本标记高亮工具",
-  "main": "index.js",
+  "description": "网页文本标记工具",
   "scripts": {
     "build": "gulp",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,6 +13,21 @@
   ],
   "author": "张集伟",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qoxop/webmark"
+  },
+  "bugs": {
+    "url": "https://github.com/qoxop/webmark/issues"
+  },
+  "files": [
+    "dist",
+    "lib",
+    "es"
+  ],
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "typings": "lib/index.d.ts",
   "devDependencies": {
     "@babel/core": "^7.8.6",
     "@babel/plugin-proposal-class-properties": "^7.8.3",

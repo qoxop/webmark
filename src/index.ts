@@ -20,7 +20,7 @@ interface Options extends Config {
 
 function init(options: Options = {}) {
     const config = setConfig(options);
-    let pageId = config.uPageHash(window.location.href);
+    let pageId = config.pageHash(window.location.href);
     const {immediate, onUrlChange, delay = 500} = options;
     let cancelKey = 0;
     if (immediate) {
@@ -34,7 +34,7 @@ function init(options: Options = {}) {
             // @ts-ignore
             cancelKey = setTimeout(() => {
                 cancelKey = 0;
-                const newPageId = config.uPageHash(window.location.href);
+                const newPageId = config.pageHash(window.location.href);
                 if (pageId !== newPageId) {
                     pageId = newPageId;
                     renderAll();

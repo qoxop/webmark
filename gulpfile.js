@@ -25,7 +25,7 @@ async function bundle() {
         plugins: [resolveNode()]
       });
       await bundle.write({
-        file: './index.js',
+        file: './dist/index.js',
         format: 'umd',
         name: 'webmark',
         sourcemap: false
@@ -42,7 +42,7 @@ async function bundle() {
         .pipe(gulp.dest(resolve(__dirname, './lib')))
 };
 function copyToExample() {
-    return gulp.src('index.js')
+    return gulp.src('./dist/index.js')
         .pipe(gulp.dest(resolve(__dirname, './example')));
 }
 module.exports.default = gulp.series(
