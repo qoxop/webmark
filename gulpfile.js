@@ -25,7 +25,7 @@ async function bundle() {
         plugins: [resolveNode()]
       });
       await bundle.write({
-        file: './dist/index.js',
+        file: './docs/index.js',
         format: 'umd',
         name: 'webmark',
         sourcemap: false
