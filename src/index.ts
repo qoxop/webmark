@@ -1,5 +1,5 @@
 import mark from './core';
-import {setConfig, Config, delMark, clearAllMark, renderAllMarks, exportToJson} from './localManager';
+import {setConfig, Config, remove, removeAll, renderAll, exportToJson} from './localManager';
 
 const DOMContentLoaded = new Promise(resolve => {
     window.addEventListener('DOMContentLoaded', function() {
@@ -24,7 +24,7 @@ function init(options: Options = {}) {
     const {immediate, onUrlChange, delay = 500} = options;
     let cancelKey = 0;
     if (immediate) {
-        DOMContentLoaded.then(renderAllMarks)
+        DOMContentLoaded.then(renderAll)
     }
     if (onUrlChange) {
         const observer = new MutationObserver(() => {
@@ -37,7 +37,7 @@ function init(options: Options = {}) {
                 const newPageId = config.uPageHash(window.location.href);
                 if (pageId !== newPageId) {
                     pageId = newPageId;
-                    renderAllMarks();
+                    renderAll();
                 }
             }, delay)
         });
@@ -47,9 +47,9 @@ function init(options: Options = {}) {
 export {
     init,
     mark,
-    delMark,
+    remove,
     setConfig,
-    exportToJson,
-    clearAllMark,
-    renderAllMarks,
+    removeAll,
+    renderAll,
+    exportToJson
 }

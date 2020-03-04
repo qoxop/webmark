@@ -41,11 +41,16 @@ async function bundle() {
         .pipe(gulp.dest(resolve(__dirname, './es')))
         .pipe(gulp.dest(resolve(__dirname, './lib')))
 };
+function copyToExample() {
+    return gulp.src('index.js')
+        .pipe(gulp.dest(resolve(__dirname, './example')));
+}
 module.exports.default = gulp.series(
     gulp.parallel(
         mkCompiler('lib'),
         mkCompiler('es'),
-        tsd
+        tsd,
     ),
     bundle,
+    copyToExample
 )

@@ -42,8 +42,10 @@ function QueryAllTextNodes(node: Node): Text[] {
     return texts as Text[]
 }
 
-export function countSelectionInfo(): SelectionInfo|boolean  {
-    const selection = window.getSelection();
+export function countSelectionInfo(selection?: Selection): SelectionInfo|boolean  {
+    if (!selection) {
+        selection = window.getSelection();
+    }
     if (!selection.isCollapsed) {
         const range = selection.getRangeAt(0);
         const {startOffset, endOffset} = range;
@@ -135,6 +137,8 @@ function render(mark: MarkInfo): boolean {
             if (textNodes.startEndChunk !== startEndChunk) {
                 return false;
             }
+        } else {
+            return false;
         }
     }
     const WrpFn = (text: Node) => {
@@ -142,20 +146,24 @@ function render(mark: MarkInfo): boolean {
         wrp.innerHTML = text.nodeValue;
         text.parentNode.replaceChild(wrp, text);
     }
-    if (start.index === end.index) {
-        const nextText = textNodes.all[start.index].splitText(start.split).splitText(end.split - start.split);
-        WrpFn(nextText.previousSibling);
+    try {
+        if (start.index === end.index) {
+            const nextText = textNodes.all[start.index].splitText(start.split).splitText(end.split - start.split);
+            WrpFn(nextText.previousSibling);
+            return true;
+        }
+        for (let i = start.index + 1; i < end.index; i++) {
+            WrpFn(textNodes.all[i])
+        }
+        const startText = textNodes.all[start.index].splitText(start.split);
+        const endText = textNodes.all[end.index].splitText(end.split).previousSibling;
+        WrpFn(startText);
+        WrpFn(endText);
         return true;
+    } catch (error) {
+        console.error(error)
+        return false;
     }
-    // containe
-    for (let i = start.index + 1; i < end.index; i++) {
-        WrpFn(textNodes.all[i])
-    }
-    const startText = textNodes.all[start.index].splitText(start.split);
-    const endText = textNodes.all[end.index].splitText(end.split).previousSibling;
-    WrpFn(startText);
-    WrpFn(endText);
-    return true;
 }
 
 type AfterFn = (mi: MarkInfo, lastRes?: any) => any;
@@ -182,7 +190,7 @@ export {
     setDefaultClass,
 }
 export default function(options: MarkOptions = {}, callback?: (mi: MarkInfo, success: boolean) => any): MarkInfo|boolean| any  {
-    const info = countSelectionInfo();
+    const info = countSelectionInfo(options.selection);
     let success = false;
     if (info !== false) {
         const mi = {...(info as SelectionInfo), ...options};
