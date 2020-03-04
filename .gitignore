@@ -61,4 +61,4 @@ typings/
 es/
 
 lib/
-index.js
+/index.js
