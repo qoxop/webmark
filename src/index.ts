@@ -1,5 +1,5 @@
 import mark from './core';
-import {setConfig, Config, remove, removeAll, renderAll, exportToJson} from './localManager';
+import {setConfig, Config, remove, removeAll, renderAll, query} from './localManager';
 
 const DOMContentLoaded = new Promise(resolve => {
     window.addEventListener('DOMContentLoaded', function() {
@@ -8,7 +8,7 @@ const DOMContentLoaded = new Promise(resolve => {
         document.head.appendChild(styleElement)
         setTimeout(() => {
             resolve()
-        })
+        }, 10)
     })
 })
 
@@ -51,5 +51,5 @@ export {
     setConfig,
     removeAll,
     renderAll,
-    exportToJson
+    query
 }

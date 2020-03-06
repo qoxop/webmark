@@ -5,7 +5,7 @@ let pageHashPrefix = 'qoxop_mark_';
 
 interface Config {
     pageHash?: (href: string) => string,
-    pageHashPrefix?: string
+    pageHashPrefix?: string,
     getPageInfo?: () => any,
     markTagName?: string,
     defaultClassName?: string,
@@ -17,7 +17,7 @@ const config: Config = {
     getPageInfo: () => ({title: document.title})
 }
 interface Store {
-    [key: string]: {
+    [PrefixPageHash: string]: {
         marks: MarkInfo[],
         pageInfo: any
     }
@@ -31,7 +31,7 @@ const MarkStore:Store = {};
 function clearDomSideEffect(marks: MarkInfo[]) {
     marks.reverse().forEach(item => {
         const domArray = Array.from(document.getElementsByClassName(item.id) || []);
-        domArray.forEach(elem => elem.parentNode.replaceChild(elem.firstChild, elem))
+        domArray.forEach(elem => elem.replaceWith(elem.firstChild))
     })
     document.normalize();
 }
@@ -53,15 +53,16 @@ function getCurrentPageMarks() {
  * @param options 
  */
 function setConfig(options: Config = {}) {
-    Object.keys(options).forEach(key => {
-        const value = options[key];
-        if (config[key]) {
-            config[key] = value;
-        } else if (key === 'markTagName') {
+    const obj = Object.assign({markTagName: 'span', defaultClassName: 'qoxop_highlight'}, options)
+    Object.keys(obj).forEach(key => {
+        const value = obj[key];
+        if (key === 'markTagName') {
             setMarkTagName(value);
         } else if (key === 'defaultClassName') {
             setDefaultClass(value);
-        }
+        } else {
+            config[key] = value;
+        } 
     })
     pageHashPrefix = config.pageHashPrefix;
     return config;
@@ -71,16 +72,18 @@ function setConfig(options: Config = {}) {
  * 渲染当前页的所有标记
  */
 function renderAll() {
+    document.normalize();
     const allmarks = getCurrentPageMarks();
+    console.log(allmarks)
     if (!allmarks || !allmarks.marks || allmarks.marks.length === 0) {
         return true;
     }
-    const elems = document.getElementsByClassName(config.defaultClassName);
+    const elems = document.getElementsByClassName(allmarks.marks[0].id);
     if (elems && elems.length > 0) {
         return true;
     }
     if (!allmarks.marks.every(item => render(item))) {
-        removeAll({allPage: false, retainTexts: true})
+        removeAll({domain: false, retainTexts: true})
     }
     return true;
 }
@@ -107,10 +110,10 @@ function remove(id: string, allRmHandler?: (clear: Function, marks: MarkInfo[]) 
         if (allRmHandler) {
             allRmHandler(() => {
                 allMarks.marks = [];
-                removeAll({allPage: false, retainTexts: false})
+                removeAll({domain: false, retainTexts: false})
             }, allMarks.marks)
         } else {
-            removeAll({allPage: false, retainTexts: false})
+            removeAll({domain: false, retainTexts: false})
         }
     } else {
         const {pageHash} = config;
@@ -119,70 +122,75 @@ function remove(id: string, allRmHandler?: (clear: Function, marks: MarkInfo[]) 
     }
 }
 
+interface TextSet {
+    [key: string]: string[]
+}
 /**
- * 导出标记内容
- * @param params 
+ * 标记文本查询
  */
-function exportToJson(params: {type?: 'text' | 'all', onlyHistory?: boolean} = {}) {
-    const {type, onlyHistory} = {type: 'text', onlyHistory: false, ...params}
-    const alls: Store = Object.keys(localStorage)
+const query = {
+    marks() {
+        return Object.keys(localStorage)
         .filter(key => key.indexOf(pageHashPrefix) === 0)
         .reduce((dateset, key) => ({
             ...dateset,
             [key]: JSON.parse(localStorage[key])
-        }), {})
-    if (type === 'all') {
-        return alls
-    }
-    if (type === 'text') {
-        const historys = Object.keys(localStorage)
-        .filter(key => key.indexOf(`history_${pageHashPrefix}_`) === 0)
-        .reduce((dateset, key) => ({
-            ...dateset,
-            [key]: JSON.parse(localStorage[key])
-        }), {})
-        if (onlyHistory === true) {
-            return historys;
+        }), {}) as Store;
+    },
+    texts(includeHistory?: boolean) {
+        let historys = {};
+        if (includeHistory) {
+            historys = Object.keys(localStorage)
+                .filter(key => key.indexOf(`history_${pageHashPrefix}_`) === 0)
+                .reduce((dateset, key) => ({
+                    ...dateset,
+                    [key]: JSON.parse(localStorage[key])
+                }), {})
         }
-        return Object.keys(alls).reduce((dataset, key) => ({
+        const marks = query.marks();
+        return Object.keys(marks).reduce((dataset, key) => ({
             ...dataset,
-            [key]: alls[key].marks.map(m => m.text)
-        }), historys); 
+            [key]: marks[key].marks.map(m => m.text)
+        }), historys) as TextSet; 
     }
-    return null;
 }
 
+interface RemoveAllOpt {
+    domain?: boolean,
+    retainTexts?: boolean
+}
 /**
  * 清除所有标记
  * @param params 
  */
-function removeAll(params: {allPage?: boolean, retainTexts?: boolean} = {}) {
-    const {allPage, retainTexts} = ({allPage: false, retainTexts: false, ...params})
+function removeAll(options: RemoveAllOpt = {}) {
+    const {domain, retainTexts} = ({domain: false, retainTexts: false, ...options})
     const pageHash = config.pageHash(window.location.href);
     let markSet: MarkInfo[] = [];
     Object.keys(localStorage)
         .filter(key => {
-            if (allPage === true) {
+            if (domain === true) {
                 return key.indexOf(pageHashPrefix) === 0;
             } else {
                 return key === pageHash
             }
-            
         })
         .forEach(key => {
             try {
                 const marks: MarkInfo[] = JSON.parse(localStorage.getItem(key) || '{}').marks
                 markSet = markSet.concat(marks);
                 if (retainTexts) { // 保存文本备份
+                    const historys = JSON.parse(localStorage.getItem(`history_${pageHashPrefix}`) || '[]')
                     localStorage.setItem(
-                        `history_${pageHashPrefix}_${Date.now()}@${Math.random().toFixed(2)}`,
-                        JSON.stringify(marks.map(item => item.text))
+                        `history_${pageHashPrefix}`,
+                        JSON.stringify(historys.concat(marks.map(item => item.text)))
                     )
                 }
             } catch (error) {
                 console.error(error)
             }
-            localStorage.removeItem(key)
+            localStorage.removeItem(key);
+            delete MarkStore[key]
         });
     // 清除页面副作用的方式
     clearDomSideEffect(markSet)
@@ -194,8 +202,9 @@ function removeAll(params: {allPage?: boolean, retainTexts?: boolean} = {}) {
 setAfterMark((mi: MarkInfo) => {
     const {pageHash, getPageInfo} = config;
     const hash = pageHash(mi.href);
-    // @ts-ignore
-    const storeMi = {...mi, selection: undefined, container: {...mi.container, elem: undefined}, textNodes: {...mi.textNodes, all: undefined}}
+    const storeMi = mi;
+    delete storeMi.textNodes.all;
+    delete storeMi.container.elem;
     if (!MarkStore[hash]) {
         MarkStore[hash] = {
             marks: [storeMi],
@@ -212,5 +221,5 @@ export {
     setConfig,
     removeAll,
     renderAll,
-    exportToJson,
+    query
 } 

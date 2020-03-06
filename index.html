@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>web mark demo</title>
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+        body {
+            padding: 20px;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>web mark demo</h1>
+        <p>
+            使用鼠标或触控板选中文本
+        </p>
+        <p>
+            一下文本均为随机生成，刷新页面便立即变化
+        </p>
+    </header>
+    <hr />
+    <div id="container">
+
+    </div>
+    <div class="tips" id="mark_tips_bar">
+        <div class="mark_default">
+            default
+        </div>
+        <div class="mark_blue">
+            blue
+        </div>
+        <div class="mark_red">
+            red
+        </div>
+        <div class="mark_green">
+            green
+        </div>
+    </div>
+    <footer>
+        <hr /><hr /><hr />
+    </footer>
+    <script src="./index.js"></script>
+    <script>
+        window.addEventListener('load', () => {
+            window.webmark.init({immediate: true});
+            var hanPaintRange = { start: 19968, end: 40869 };
+            var diff = hanPaintRange.end - hanPaintRange.start;
+            function sentence(num) {
+                if (!num) {
+                    num = Math.max(Math.floor(Math.random() * 30), 5);
+                }
+                let str = ''
+                while(--num) {
+                    str += String.fromCharCode(Math.floor(Math.random() * (diff - num)) + hanPaintRange.start + num)
+                }
+                
+                return `<span>${str}</span>`;
+            }
+            function p() {
+                var num = Math.max(Math.floor(Math.random() * 10), 4);
+                var sentences = [];
+                while(--num) {
+                    sentences.push(sentence())
+                }
+                return `<p>${sentences.join('，')}。</p>`
+            }
+            function article() {
+                const article = document.createElement('article');
+                var num = Math.max(Math.floor(Math.random() * 10), 3);
+                var ps = []
+                while(--num) {
+                    ps.push(p());
+                }
+                article.innerHTML = `
+                    <h2>${sentence(9)}</h2>
+                    ${ps.join('\n')}
+                `
+                return article;
+            }
+            function page() {
+                var container = document.getElementById('container');
+
+                container.appendChild(article())
+                container.appendChild(article())
+                container.appendChild(article())
+            }
+            page();
+            var tipsBar = document.getElementById('mark_tips_bar');
+            var tipsBarShowing = false;
+            var curSelection = null;
+            window.addEventListener('mouseup', event => {
+                curSelection = window.getSelection();
+                if (!curSelection.isCollapsed && !tipsBarShowing) {
+                    tipsBarShowing = true;
+                    tipsBar.style.display = 'inline-flex';
+                    tipsBar.style.top = `${event.clientY}px`;
+                    tipsBar.style.left = `${event.clientX}px`;
+                } else {
+                    tipsBarShowing = false;
+                    tipsBar.style.display = 'none';
+                }
+            })
+            tipsBar.onmousedown = (event) => {
+                event.preventDefault();
+                tipsBarShowing = false;
+                tipsBar.style.display = 'none';
+                console.log(window.webmark.mark({
+                    className: event.target.getAttribute('class'),
+                    selection: curSelection
+                }))
+            }
+        })
+        
+    </script>
+</body>
+</html>

@@ -1,29 +1,161 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>web mark demo</title>
-    <link rel="stylesheet" href="./styles.css">
-    <style>
-        body {
-            padding: 20px;
-            max-width: 960px;
-            margin: 0 auto;
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <h1>web mark demos</h1>
-        <p>
-            使用鼠标或触控板选中文本
-        </p>
-    </header>
-    <hr />
-    <div id="container">
+<html>
 
-    </div>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css"
+        integrity="sha256-BZ71u1P7NUocEN9mKkcAovn3q5JPm/r9xVyjWh/Kqrc=" crossorigin="anonymous">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+    <article class="markdown-body" id="preview" data-open-title="Hide Preview" data-closed-title="Show Preview"
+        style="padding-bottom: 0px;">
+        <div>
+            <h1 id="webmark" data-source-line="1"><a class="markdownIt-Anchor" href="#webmark"></a>webmark</h1>
+            <p data-source-line="3">简单易用的网页文本标记工具。</p>
+            <p data-source-line="5">标记原理是使用<code>window.getSelection</code> API 获取到选中的文本节点，并包裹一层自定义的标签(默认是&lt;marks
+                class="qoxop_highlight" /&gt;), 默认标签名和样式名可以通过 <code>init</code> 或 <code>setConfig</code> 方法修改。</p>
+            <p data-source-line="7">
+                <strong>说明</strong>：默认使用<code>localStorage</code>对<code>mark数据</code>进行存储管理。由于同一个域下一般存在多个页面(或者一些spa的场景)，所以每一个页面的<code>mark数据</code>对应<code>localStorage</code>的某一项。如果不想使用存储功能可以直接引入
+                <code>webmark/lib/core.js</code>文件。</p>
+            <h2 id="安装" data-source-line="11"><a class="markdownIt-Anchor" href="#安装"></a>安装</h2>
+            <p data-source-line="13">使用<code>npm</code></p>
+            <pre data-source-line="14"><code class="hljs">npm <span class="hljs-keyword">install</span> webmark <span class="hljs-comment">--save</span>
+</code></pre>
+            <p data-source-line="17">使用浏览器, 下载 <a href="http://files.codcats.com/webmark.js"
+                    target="_blank">webmark.js</a>
+                直接在html中引入</p>
+            <pre data-source-line="18"><code class="hljs"> <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"./webmark.js"</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+            <h2 id="api" data-source-line="23"><a class="markdownIt-Anchor" href="#api"></a>API</h2>
+            <ul data-source-line="24">
+                <li><code>setConfig</code> : 设置默认值</li>
+                <li><code>init</code> : 设置默认值，配置初始化渲染时机</li>
+                <li><code>mark</code> : 标记通过鼠标或触控板选中的文本</li>
+                <li><code>remove</code> : 通过 <code>mark_id</code> 删除一个标记</li>
+                <li><code>removeAll</code> : 移除所有的</li>
+                <li><code>renderAll</code> : 渲染所有存在localStorage中的标记信息</li>
+                <li><code>query</code> : 一个标记查询对象</li>
+            </ul>
+            <h3 id="setconfigconfig-config" data-source-line="32"><a class="markdownIt-Anchor"
+                    href="#setconfigconfig-config"></a>setConfig(config: Config)</h3>
+            <p data-source-line="34">设置默认值，告诉 <code>webmark</code> 怎样存储和标记</p>
+            <pre data-source-line="37"><code class="hljs"><span class="hljs-keyword">interface</span> Config {
+    pageHash?: <span class="hljs-function">(<span class="hljs-params">href: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-built_in">string</span>, <span class="hljs-comment">// <span class="zh-hans">获取当前页面的唯一标识函数，该标识将用于存储的</span>key<span class="zh-hans">值</span></span>
+    pageHashPrefix?: <span class="hljs-built_in">string</span>,             <span class="hljs-comment">// <span class="zh-hans">用于</span>localStorage<span class="zh-hans">的</span>key<span class="zh-hans">值前缀，必须足够特别，避免冲突</span></span>
+    getPageInfo?: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">any</span>,             <span class="hljs-comment">// <span class="zh-hans">获取当前页面信息</span></span>
+    markTagName?: <span class="hljs-built_in">string</span>,                <span class="hljs-comment">// <span class="zh-hans">默认</span> tagname         </span>
+    defaultClassName?: <span class="hljs-built_in">string</span>,           <span class="hljs-comment">// <span class="zh-hans">默认</span> className</span>
+    [key: <span class="hljs-built_in">string</span>]: <span class="hljs-built_in">any</span>
+}
+
+</code></pre>
+            <h3 id="initoptions-options" data-source-line="49"><a class="markdownIt-Anchor"
+                    href="#initoptions-options"></a>init(options: Options)</h3>
+            <p data-source-line="51"><code>init</code> 内部会调用 <code>setConfig</code> 方法对默认值进行设置，同时如果设置 <code>immediate =
+                    true</code>, 将会在页面加载结束( <code>DOMContentLoaded</code> )时自动渲染存储在 <code>localStorage</code> 中的
+                <code>mark数据</code></p>
+            <p data-source-line="53">如果是<code>spa</code>等单页应用，可以自行调用<code>setConfig</code> 和 <code>renderAll</code>
+                方法自行决定渲染时机。</p>
+            <pre data-source-line="55"><code class="hljs"><span class="hljs-keyword">interface</span> Options <span class="hljs-keyword">extends</span> Config {
+    immediate?: <span class="hljs-built_in">boolean</span>,                <span class="hljs-comment">// <span class="zh-hans">页面加载结束立即渲染</span></span>
+    onUrlChange?: <span class="hljs-built_in">boolean</span>,              <span class="hljs-comment">// url <span class="zh-hans">变化时自动渲染</span>(<span class="zh-hans">等待</span>dom<span class="zh-hans">结构稳定</span>)</span>
+    delay?: <span class="hljs-built_in">number</span>,                     <span class="hljs-comment">// <span class="zh-hans">等待时间</span></span>
+}
+
+</code></pre>
+            <h3 id="markoptions-markoptions" data-source-line="64"><a class="markdownIt-Anchor"
+                    href="#markoptions-markoptions"></a>mark(options?: MarkOptions)</h3>
+            <p data-source-line="66">调用 <code>mark</code> 方法对选中文本进行标记，如果不存在选中的文本<code>mark()</code>返回<code>false</code>。
+                你可以传入参数设置它的样式或者其他信息。</p>
+            <p data-source-line="69">
+                注意<code>mark</code>的调用时机，onclick事件或者ontouch事件会使Selections失去焦点，导致标记失败，正确的做法是利用onmousedown、ontouchstart或键盘事件等来触发
+                <code>mark</code> 方法。</p>
+            <pre data-source-line="71"><code class="hljs"><span class="hljs-keyword">interface</span> MarkOptions {
+    style?: <span class="hljs-built_in">any</span>,            <span class="hljs-comment">// style<span class="zh-hans">对象（键名用驼峰命名）</span></span>
+    className?: <span class="hljs-built_in">string</span>,     <span class="hljs-comment">// css<span class="zh-hans">类名</span></span>
+    meta?: <span class="hljs-built_in">string</span>,          <span class="hljs-comment">// <span class="zh-hans">额外信息，将会对</span>mark<span class="zh-hans">标签调用</span> setAttribute('meta_data', JSON.stringify(mark.meta))</span>
+}
+</code></pre>
+            <h3 id="removemarkid-string" data-source-line="79"><a class="markdownIt-Anchor"
+                    href="#removemarkid-string"></a>remove(markId: string)</h3>
+            <p data-source-line="81">每一个<code>marks</code>元素上都有一个 <code>mark_id</code>
+                属性，可以通过<code>markElem.getAttribute('mark_id')</code> 获取得到，将它传递给<code>remove</code> 方法就一个删除一个标记了.</p>
+            <p data-source-line="83">注意：<code>remove</code>
+                并不会真正清除标记对页面的副作用(marks标签还是挂在dom结构上)，它仅仅只是移除了该标记所有的样式，除非标记全部删除(此时将会对页面的marks标签进行一次清除，并调用
+                <code>document.normalize()</code> 修复被分隔的文本)</p>
+            <h3 id="removealloptions-removeallopt" data-source-line="85"><a class="markdownIt-Anchor"
+                    href="#removealloptions-removeallopt"></a>removeAll(options?: RemoveAllOpt)</h3>
+            <p data-source-line="87">清空所有的标记，并解除页面副作用，默认只清空当前页面。</p>
+            <p data-source-line="89">当开启了 <code>retainTexts</code>
+                文本将会以字符串数组的形式存储在<code>localStorage</code>里，<code>key</code>
+                值的格式：<code>history_${pageHashPrefix}_xxxxx}</code>,</p>
+            <pre data-source-line="90"><code class="hljs"><span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">MarkOptions</span> {</span>
+    domain?: <span class="hljs-keyword">boolean</span>,       <span class="hljs-comment">// <span class="zh-hans">是否清空当前域名下的所有</span>mark<span class="zh-hans">数据</span></span>
+    retainTexts?: <span class="hljs-keyword">boolean</span>   <span class="hljs-comment">// <span class="zh-hans">是否保留标记的文本信息</span></span>
+}
+</code></pre>
+            <h3 id="renderall" data-source-line="97"><a class="markdownIt-Anchor" href="#renderall"></a>renderAll()</h3>
+            <p data-source-line="99">将当前页面存储于<code>localStorage</code>中的<code>mark数据</code>进行渲染,渲染成功返回
+                <code>true</code>，如果页面结构已经发生改变，那么渲染失败，会调用 <code>removeAll({retainTexts: true})</code>并返回
+                <code>false</code>
+            </p>
+            <h3 id="query" data-source-line="101"><a class="markdownIt-Anchor" href="#query"></a>query</h3>
+            <p data-source-line="103">用于获取<code>marks数据</code>的对象，包含如下两个方法：</p>
+            <ul data-source-line="105">
+                <li><code>query.marks(): Store</code>: 返回返回当前域名下所有的<code>marks数据</code></li>
+                <li><code>query.texts(includeHistory?: boolean): TextSet</code>: 返回返回当前域名下所有标记文本</li>
+            </ul>
+            <h2 id="数据类型" data-source-line="108"><a class="markdownIt-Anchor" href="#数据类型"></a>数据类型</h2>
+            <ul data-source-line="110">
+                <li>对选中区域的的描述</li>
+            </ul>
+            <pre data-source-line="111"><code class="hljs"><span class="hljs-keyword">interface</span> SelectionInfo {
+    id: <span class="hljs-built_in">string</span>,
+    unused?: <span class="hljs-built_in">boolean</span>,    
+    container: { index: <span class="hljs-built_in">number</span>, tagname: <span class="hljs-built_in">string</span>, elem?: HTMLElement | Node},
+    textNodes: {
+        start: {index: <span class="hljs-built_in">number</span>, split: <span class="hljs-built_in">number</span>}
+        end: {index: <span class="hljs-built_in">number</span>, split: <span class="hljs-built_in">number</span>}
+        all?: Text[]
+        startEndChunk: <span class="hljs-built_in">string</span>
+    },
+    href: <span class="hljs-built_in">string</span>,
+    time: <span class="hljs-built_in">number</span>,
+    text: <span class="hljs-built_in">string</span>
+}
+
+</code></pre>
+            <ul data-source-line="128">
+                <li>对标记文本的描述</li>
+            </ul>
+            <pre data-source-line="129"><code class="hljs"><span class="hljs-keyword">interface</span> MarkOptions {
+    style?: <span class="hljs-built_in">any</span>,
+    className?: <span class="hljs-built_in">string</span>,
+    meta?: <span class="hljs-built_in">string</span>,
+}
+<span class="hljs-keyword">type</span> MarkInfo = SelectionInfo &amp; MarkOptions
+</code></pre>
+            <ul data-source-line="138">
+                <li><code>mark数据</code>在 <code>localStorage</code> 的存储结构</li>
+            </ul>
+            <pre data-source-line="139"><code class="hljs"><span class="hljs-keyword">interface</span> Store {
+    [PrefixPageHash: <span class="hljs-built_in">string</span>]: {
+        marks: MarkInfo[],
+        pageInfo: <span class="hljs-built_in">any</span>       <span class="hljs-comment">// === Config.getPageInfo()</span>
+    }
+}
+</code></pre>
+            <ul data-source-line="147">
+                <li>历史标记文本或者导出文本的数据结构</li>
+            </ul>
+            <pre data-source-line="148"><code class="hljs"><span class="hljs-keyword">interface</span> <span class="hljs-symbol">TextSet</span> {
+    [historyOrPageKey: <span class="hljs-built_in">string</span>]: <span class="hljs-built_in">string</span>[] 
+    <span class="hljs-comment">// history_${pageHashPrefix}</span>
+}
+</code></pre>
+        </div>
+    </article>
     <div class="tips" id="mark_tips_bar">
         <div class="mark_default">
             default
@@ -38,81 +170,7 @@
             green
         </div>
     </div>
-    <footer>
-        <hr /><hr /><hr />
-    </footer>
-    <script src="./index.js"></script>
-    <script>
-        window.addEventListener('load', () => {
-            window.webmark.init({immediate: true});
-            var hanPaintRange = { start: 19968, end: 40869 };
-            var diff = hanPaintRange.end - hanPaintRange.start;
-            function sentence(num) {
-                if (!num) {
-                    num = Math.max(Math.floor(Math.random() * 30), 5);
-                }
-                let str = ''
-                while(--num) {
-                    str += String.fromCharCode(Math.floor(Math.random() * (diff - num)) + hanPaintRange.start + num)
-                }
-                
-                return `<span>${str}</span>`;
-            }
-            function p() {
-                var num = Math.max(Math.floor(Math.random() * 10), 4);
-                var sentences = [];
-                while(--num) {
-                    sentences.push(sentence())
-                }
-                return `<p>${sentences.join('，')}。</p>`
-            }
-            function article() {
-                const article = document.createElement('article');
-                var num = Math.max(Math.floor(Math.random() * 10), 3);
-                var ps = []
-                while(--num) {
-                    ps.push(p());
-                }
-                article.innerHTML = `
-                    <h2>${sentence(9)}</h2>
-                    ${ps.join('\n')}
-                `
-                return article;
-            }
-            function page() {
-                var container = document.getElementById('container');
-
-                container.appendChild(article())
-                container.appendChild(article())
-                container.appendChild(article())
-            }
-            page();
-            var tipsBar = document.getElementById('mark_tips_bar');
-            var tipsBarShowing = false;
-            var curSelection = null;
-            window.addEventListener('mouseup', event => {
-                curSelection = window.getSelection();
-                if (!curSelection.isCollapsed && !tipsBarShowing) {
-                    tipsBarShowing = true;
-                    tipsBar.style.display = 'inline-flex';
-                    tipsBar.style.top = `${event.clientY}px`;
-                    tipsBar.style.left = `${event.clientX}px`;
-                } else {
-                    tipsBarShowing = false;
-                    tipsBar.style.display = 'none';
-                }
-            })
-            tipsBar.onmousedown = (event) => {
-                event.preventDefault();
-                tipsBarShowing = false;
-                tipsBar.style.display = 'none';
-                console.log(window.webmark.mark({
-                    className: event.target.getAttribute('class'),
-                    selection: curSelection
-                }))
-            }
-        })
-        
-    </script>
+    <script src="./test.js"></script>
 </body>
+
 </html>

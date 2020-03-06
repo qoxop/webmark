@@ -1,7 +1,7 @@
 
 import {MarkInfo, MarkOptions, SelectionInfo} from './types';
 
-let CustomTagName = 'marks';
+let CustomTagName = 'span';
 let HighLightClass = 'qoxop_highlight';
 
 /**
@@ -42,10 +42,8 @@ function QueryAllTextNodes(node: Node): Text[] {
     return texts as Text[]
 }
 
-export function countSelectionInfo(selection?: Selection): SelectionInfo|boolean  {
-    if (!selection) {
-        selection = window.getSelection();
-    }
+export function countSelectionInfo(): SelectionInfo|boolean  {
+    const selection = window.getSelection();
     if (!selection.isCollapsed) {
         const range = selection.getRangeAt(0);
         const {startOffset, endOffset} = range;
@@ -101,20 +99,16 @@ export function countSelectionInfo(selection?: Selection): SelectionInfo|boolean
 }
 
 
-
 /**
  * 渲染标记文本
  * @param MarkInfo 
  */
 function render(mark: MarkInfo): boolean {
-    const {container, textNodes} = mark;
-    const {start, end} = textNodes;
+    const {container: {index: tagIndex, tagname}, textNodes: {start, end}} = mark;
+    let {container: {elem}, textNodes: {all: allTexts}} = mark;
     const Wrp = document.createElement(CustomTagName);
     const className = `${HighLightClass} ${mark.className ? mark.className : ''}`;
-    Wrp.setAttribute(
-        'class', 
-        `${mark.unused ? '' : className} ${mark.id}`
-    )
+    Wrp.setAttribute('class', `${mark.unused ? '' : className} ${mark.id}`)
     Wrp.setAttribute('mark_id', mark.id);
     if (mark.style) {
         Object.keys(mark.style).forEach(key => {
@@ -125,16 +119,16 @@ function render(mark: MarkInfo): boolean {
     if (mark.meta) {
         Wrp.setAttribute('meta_data', JSON.stringify(mark.meta));
     }
-    if (!textNodes.all || textNodes.all.length < 1) {
-        if (!(container.elem instanceof Element)) {
-            const elems = document.getElementsByTagName(container.tagname);
-            container.elem = elems.item(container.index);
+    if (!allTexts || allTexts.length < 1) {
+        if (!(elem instanceof Element)) {
+            const elems = document.getElementsByTagName(tagname);
+            elem = elems.item(tagIndex);
         }
-        textNodes.all = QueryAllTextNodes(container.elem);
+        allTexts = QueryAllTextNodes(elem);
         // check chunk
-        if (textNodes.all &&  textNodes.all[start.index] && textNodes.all[end.index]) {
-            const startEndChunk = countStartEndChunk(textNodes.all[start.index], textNodes.all[end.index]);
-            if (textNodes.startEndChunk !== startEndChunk) {
+        if (allTexts && allTexts[start.index] && allTexts[end.index]) {
+            const startEndChunk = countStartEndChunk(allTexts[start.index], allTexts[end.index]);
+            if (mark.textNodes.startEndChunk !== startEndChunk) {
                 return false;
             }
         } else {
@@ -148,15 +142,15 @@ function render(mark: MarkInfo): boolean {
     }
     try {
         if (start.index === end.index) {
-            const nextText = textNodes.all[start.index].splitText(start.split).splitText(end.split - start.split);
+            const nextText = allTexts[start.index].splitText(start.split).splitText(end.split - start.split);
             WrpFn(nextText.previousSibling);
             return true;
         }
         for (let i = start.index + 1; i < end.index; i++) {
-            WrpFn(textNodes.all[i])
+            WrpFn(allTexts[i])
         }
-        const startText = textNodes.all[start.index].splitText(start.split);
-        const endText = textNodes.all[end.index].splitText(end.split).previousSibling;
+        const startText = allTexts[start.index].splitText(start.split);
+        const endText = allTexts[end.index].splitText(end.split).previousSibling;
         WrpFn(startText);
         WrpFn(endText);
         return true;
@@ -190,7 +184,7 @@ export {
     setDefaultClass,
 }
 export default function(options: MarkOptions = {}, callback?: (mi: MarkInfo, success: boolean) => any): MarkInfo|boolean| any  {
-    const info = countSelectionInfo(options.selection);
+    const info = countSelectionInfo();
     let success = false;
     if (info !== false) {
         const mi = {...(info as SelectionInfo), ...options};

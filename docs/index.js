@@ -90,10 +90,8 @@
     return texts;
   }
 
-  function countSelectionInfo(selection) {
-    if (!selection) {
-      selection = window.getSelection();
-    }
+  function countSelectionInfo() {
+    var selection = window.getSelection();
 
     if (!selection.isCollapsed) {
       var range = selection.getRangeAt(0);
@@ -171,6 +169,7 @@
    */
 
   function render(mark) {
+    document.normalize();
     var container = mark.container,
         textNodes = mark.textNodes;
     var start = textNodes.start,
@@ -264,7 +263,7 @@
   function core () {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var callback = arguments.length > 1 ? arguments[1] : undefined;
-    var info = countSelectionInfo(options.selection);
+    var info = countSelectionInfo();
     var success = false;
 
     if (info !== false) {
@@ -341,15 +340,19 @@
 
   function setConfig() {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    Object.keys(options).forEach(function (key) {
-      var value = options[key];
+    var obj = Object.assign({
+      markTagName: 'marks',
+      defaultClassName: 'qoxop_highlight'
+    }, options);
+    Object.keys(obj).forEach(function (key) {
+      var value = obj[key];
 
-      if (config[key]) {
-        config[key] = value;
-      } else if (key === 'markTagName') {
+      if (key === 'markTagName') {
         setMarkTagName(value);
       } else if (key === 'defaultClassName') {
         setDefaultClass(value);
+      } else {
+        config[key] = value;
       }
     });
     pageHashPrefix = config.pageHashPrefix;
@@ -367,7 +370,7 @@
       return true;
     }
 
-    var elems = document.getElementsByClassName(config.defaultClassName);
+    var elems = document.getElementsByClassName(allmarks.marks[0].id);
 
     if (elems && elems.length > 0) {
       return true;
@@ -377,7 +380,7 @@
       return render(item);
     })) {
       removeAll({
-        allPage: false,
+        domain: false,
         retainTexts: true
       });
     }
@@ -413,13 +416,13 @@
         allRmHandler(function () {
           allMarks.marks = [];
           removeAll({
-            allPage: false,
+            domain: false,
             retainTexts: false
           });
         }, allMarks.marks);
       } else {
         removeAll({
-          allPage: false,
+          domain: false,
           retainTexts: false
         });
       }
@@ -429,72 +432,56 @@
       window.localStorage.setItem(hash, JSON.stringify(allMarks));
     }
   }
+
   /**
-   * 导出标记内容
-   * @param params 
+   * 标记文本查询
    */
-
-
-  function exportToJson() {
-    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-    var _type$onlyHistory$par = _objectSpread$1({
-      type: 'text',
-      onlyHistory: false
-    }, params),
-        type = _type$onlyHistory$par.type,
-        onlyHistory = _type$onlyHistory$par.onlyHistory;
-
-    var alls = Object.keys(localStorage).filter(function (key) {
-      return key.indexOf(pageHashPrefix) === 0;
-    }).reduce(function (dateset, key) {
-      return _objectSpread$1({}, dateset, _defineProperty({}, key, JSON.parse(localStorage[key])));
-    }, {});
-
-    if (type === 'all') {
-      return alls;
-    }
-
-    if (type === 'text') {
-      var historys = Object.keys(localStorage).filter(function (key) {
-        return key.indexOf("history_".concat(pageHashPrefix, "_")) === 0;
+  var query = {
+    marks: function marks() {
+      return Object.keys(localStorage).filter(function (key) {
+        return key.indexOf(pageHashPrefix) === 0;
       }).reduce(function (dateset, key) {
         return _objectSpread$1({}, dateset, _defineProperty({}, key, JSON.parse(localStorage[key])));
       }, {});
+    },
+    texts: function texts(includeHistory) {
+      var historys = {};
 
-      if (onlyHistory === true) {
-        return historys;
+      if (includeHistory) {
+        historys = Object.keys(localStorage).filter(function (key) {
+          return key.indexOf("history_".concat(pageHashPrefix, "_")) === 0;
+        }).reduce(function (dateset, key) {
+          return _objectSpread$1({}, dateset, _defineProperty({}, key, JSON.parse(localStorage[key])));
+        }, {});
       }
 
-      return Object.keys(alls).reduce(function (dataset, key) {
-        return _objectSpread$1({}, dataset, _defineProperty({}, key, alls[key].marks.map(function (m) {
+      var marks = query.marks();
+      return Object.keys(marks).reduce(function (dataset, key) {
+        return _objectSpread$1({}, dataset, _defineProperty({}, key, marks[key].marks.map(function (m) {
           return m.text;
         })));
       }, historys);
     }
+  };
 
-    return null;
-  }
   /**
    * 清除所有标记
    * @param params 
    */
-
-
   function removeAll() {
-    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-    var _allPage$retainTexts$ = _objectSpread$1({
-      allPage: false,
+    var _domain$retainTexts$o = _objectSpread$1({
+      domain: false,
       retainTexts: false
-    }, params),
-        allPage = _allPage$retainTexts$.allPage,
-        retainTexts = _allPage$retainTexts$.retainTexts;
+    }, options),
+        domain = _domain$retainTexts$o.domain,
+        retainTexts = _domain$retainTexts$o.retainTexts;
 
     var pageHash = config.pageHash(window.location.href);
     var markSet = [];
     Object.keys(localStorage).filter(function (key) {
-      if (allPage === true) {
+      if (domain === true) {
         return key.indexOf(pageHashPrefix) === 0;
       } else {
         return key === pageHash;
@@ -506,9 +493,10 @@
 
         if (retainTexts) {
           // 保存文本备份
-          localStorage.setItem("history_".concat(pageHashPrefix, "_").concat(Date.now(), "@").concat(Math.random().toFixed(2)), JSON.stringify(_marks.map(function (item) {
+          var historys = JSON.parse(localStorage.getItem("history_".concat(pageHashPrefix)) || '[]');
+          localStorage.setItem("history_".concat(pageHashPrefix), JSON.stringify(historys.concat(_marks.map(function (item) {
             return item.text;
-          })));
+          }))));
         }
       } catch (error) {
         console.error(error);
@@ -527,17 +515,10 @@
   setAfterMark(function (mi) {
     var pageHash = config.pageHash,
         getPageInfo = config.getPageInfo;
-    var hash = pageHash(mi.href); // @ts-ignore
-
-    var storeMi = _objectSpread$1({}, mi, {
-      selection: undefined,
-      container: _objectSpread$1({}, mi.container, {
-        elem: undefined
-      }),
-      textNodes: _objectSpread$1({}, mi.textNodes, {
-        all: undefined
-      })
-    });
+    var hash = pageHash(mi.href);
+    var storeMi = mi;
+    delete storeMi.textNodes.all;
+    delete storeMi.container.elem;
 
     if (!MarkStore[hash]) {
       MarkStore[hash] = {
@@ -600,9 +581,9 @@
     }
   }
 
-  exports.exportToJson = exportToJson;
   exports.init = init;
   exports.mark = core;
+  exports.query = query;
   exports.remove = remove;
   exports.removeAll = removeAll;
   exports.renderAll = renderAll;

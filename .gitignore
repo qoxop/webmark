@@ -63,3 +63,4 @@ es/
 lib/
 
 dist/
+.cache/

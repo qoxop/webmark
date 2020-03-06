@@ -2,7 +2,6 @@ export interface MarkOptions {
     style?: any,
     className?: string,
     meta?: string,
-    selection?: Selection
 }
 
 /**
