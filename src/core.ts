@@ -19,7 +19,7 @@ function countStartEndChunk(start: Node, end: Node) {
  * @param {Node} node 
  */
 function QueryAllTextNodes(node: Node): Text[] {
-    const texts = []
+    const texts = [];
     if (node) {
         if (document.createNodeIterator) {
             const textIterator = document.createNodeIterator(node, NodeFilter.SHOW_TEXT);
@@ -39,9 +39,12 @@ function QueryAllTextNodes(node: Node): Text[] {
             }
         }
     }
-    return texts as Text[]
+    return texts as Text[];
 }
 
+/**
+ * 计算选中文本在文档中的位置
+ */
 export function countSelectionInfo(): SelectionInfo|boolean  {
     const selection = window.getSelection();
     if (!selection.isCollapsed) {
@@ -81,7 +84,7 @@ export function countSelectionInfo(): SelectionInfo|boolean  {
             }
         }
         selectionInfo.textNodes.all = allTextNodes;
-        selectionInfo.textNodes.startEndChunk = countStartEndChunk(range.startContainer, range.endContainer)
+        selectionInfo.textNodes.startEndChunk = countStartEndChunk(range.startContainer, range.endContainer);
         // 记住元素位置
         const tags = document.getElementsByTagName(containerElem.nodeName);
         for (let i = 0; i < tags.length; i++) {
@@ -108,12 +111,12 @@ function render(mark: MarkInfo): boolean {
     let {container: {elem}, textNodes: {all: allTexts}} = mark;
     const Wrp = document.createElement(CustomTagName);
     const className = `${HighLightClass} ${mark.className ? mark.className : ''}`;
-    Wrp.setAttribute('class', `${mark.unused ? '' : className} ${mark.id}`)
+    Wrp.setAttribute('class', `${mark.unused ? '' : className} ${mark.id}`);
     Wrp.setAttribute('mark_id', mark.id);
     if (mark.style) {
         Object.keys(mark.style).forEach(key => {
             // @ts-ignore
-            Wrp.style[key] = mark.style[key]
+            Wrp.style[key] = mark.style[key];
         });
     }
     if (mark.meta) {
@@ -147,7 +150,7 @@ function render(mark: MarkInfo): boolean {
             return true;
         }
         for (let i = start.index + 1; i < end.index; i++) {
-            WrpFn(allTexts[i])
+            WrpFn(allTexts[i]);
         }
         const startText = allTexts[start.index].splitText(start.split);
         const endText = allTexts[end.index].splitText(end.split).previousSibling;

@@ -3,14 +3,14 @@ import {setConfig, Config, remove, removeAll, renderAll, query} from './localMan
 
 const DOMContentLoaded = new Promise(resolve => {
     window.addEventListener('DOMContentLoaded', function() {
-        const styleElement = document.createElement('style')
-        styleElement.innerHTML = `.qoxop_highlight {background: #f3f308;}`
-        document.head.appendChild(styleElement)
+        const styleElement = document.createElement('style');
+        styleElement.innerHTML = `.qoxop_highlight {background: #f3f308;}`;
+        document.head.appendChild(styleElement);
         setTimeout(() => {
-            resolve()
-        }, 10)
-    })
-})
+            resolve();
+        }, 10);
+    });
+});
 
 interface Options extends Config {
     immediate?: boolean,
@@ -24,7 +24,7 @@ function init(options: Options = {}) {
     const {immediate, onUrlChange, delay = 500} = options;
     let cancelKey = 0;
     if (immediate) {
-        DOMContentLoaded.then(renderAll)
+        DOMContentLoaded.then(renderAll);
     }
     if (onUrlChange) {
         const observer = new MutationObserver(() => {
@@ -39,9 +39,9 @@ function init(options: Options = {}) {
                     pageId = newPageId;
                     renderAll();
                 }
-            }, delay)
+            }, delay);
         });
-        observer.observe(document.body, {childList: true, subtree: true })
+        observer.observe(document.body, {childList: true, subtree: true });
     }
 }
 export {

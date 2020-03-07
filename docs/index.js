@@ -45,7 +45,7 @@
 
   function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
-  var CustomTagName = 'marks';
+  var CustomTagName = 'span';
   var HighLightClass = 'qoxop_highlight';
   /**
    * 获取首尾节点的字符串，用于校验标记是否作废
@@ -89,6 +89,10 @@
 
     return texts;
   }
+  /**
+   * 计算选中文本在文档中的位置
+   */
+
 
   function countSelectionInfo() {
     var selection = window.getSelection();
@@ -169,11 +173,14 @@
    */
 
   function render(mark) {
-    document.normalize();
-    var container = mark.container,
-        textNodes = mark.textNodes;
-    var start = textNodes.start,
-        end = textNodes.end;
+    var _mark$container = mark.container,
+        tagIndex = _mark$container.index,
+        tagname = _mark$container.tagname,
+        _mark$textNodes = mark.textNodes,
+        start = _mark$textNodes.start,
+        end = _mark$textNodes.end;
+    var elem = mark.container.elem,
+        allTexts = mark.textNodes.all;
     var Wrp = document.createElement(CustomTagName);
     var className = "".concat(HighLightClass, " ").concat(mark.className ? mark.className : '');
     Wrp.setAttribute('class', "".concat(mark.unused ? '' : className, " ").concat(mark.id));
@@ -190,18 +197,18 @@
       Wrp.setAttribute('meta_data', JSON.stringify(mark.meta));
     }
 
-    if (!textNodes.all || textNodes.all.length < 1) {
-      if (!(container.elem instanceof Element)) {
-        var elems = document.getElementsByTagName(container.tagname);
-        container.elem = elems.item(container.index);
+    if (!allTexts || allTexts.length < 1) {
+      if (!(elem instanceof Element)) {
+        var elems = document.getElementsByTagName(tagname);
+        elem = elems.item(tagIndex);
       }
 
-      textNodes.all = QueryAllTextNodes(container.elem); // check chunk
+      allTexts = QueryAllTextNodes(elem); // check chunk
 
-      if (textNodes.all && textNodes.all[start.index] && textNodes.all[end.index]) {
-        var startEndChunk = countStartEndChunk(textNodes.all[start.index], textNodes.all[end.index]);
+      if (allTexts && allTexts[start.index] && allTexts[end.index]) {
+        var startEndChunk = countStartEndChunk(allTexts[start.index], allTexts[end.index]);
 
-        if (textNodes.startEndChunk !== startEndChunk) {
+        if (mark.textNodes.startEndChunk !== startEndChunk) {
           return false;
         }
       } else {
@@ -217,17 +224,17 @@
 
     try {
       if (start.index === end.index) {
-        var nextText = textNodes.all[start.index].splitText(start.split).splitText(end.split - start.split);
+        var nextText = allTexts[start.index].splitText(start.split).splitText(end.split - start.split);
         WrpFn(nextText.previousSibling);
         return true;
       }
 
       for (var i = start.index + 1; i < end.index; i++) {
-        WrpFn(textNodes.all[i]);
+        WrpFn(allTexts[i]);
       }
 
-      var startText = textNodes.all[start.index].splitText(start.split);
-      var endText = textNodes.all[end.index].splitText(end.split).previousSibling;
+      var startText = allTexts[start.index].splitText(start.split);
+      var endText = allTexts[end.index].splitText(end.split).previousSibling;
       WrpFn(startText);
       WrpFn(endText);
       return true;
@@ -308,7 +315,7 @@
     marks.reverse().forEach(function (item) {
       var domArray = Array.from(document.getElementsByClassName(item.id) || []);
       domArray.forEach(function (elem) {
-        return elem.parentNode.replaceChild(elem.firstChild, elem);
+        return elem.replaceWith(elem.firstChild);
       });
     });
     document.normalize();
@@ -341,7 +348,7 @@
   function setConfig() {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var obj = Object.assign({
-      markTagName: 'marks',
+      markTagName: 'span',
       defaultClassName: 'qoxop_highlight'
     }, options);
     Object.keys(obj).forEach(function (key) {
@@ -364,6 +371,7 @@
 
 
   function renderAll() {
+    document.normalize();
     var allmarks = getCurrentPageMarks();
 
     if (!allmarks || !allmarks.marks || allmarks.marks.length === 0) {
@@ -503,6 +511,7 @@
       }
 
       localStorage.removeItem(key);
+      delete MarkStore[key];
     }); // 清除页面副作用的方式
 
     clearDomSideEffect(markSet);
@@ -539,7 +548,7 @@
       document.head.appendChild(styleElement);
       setTimeout(function () {
         resolve();
-      });
+      }, 10);
     });
   });
 

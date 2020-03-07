@@ -63,7 +63,7 @@ function setConfig(options: Config = {}) {
         } else {
             config[key] = value;
         } 
-    })
+    });
     pageHashPrefix = config.pageHashPrefix;
     return config;
 }
@@ -74,7 +74,6 @@ function setConfig(options: Config = {}) {
 function renderAll() {
     document.normalize();
     const allmarks = getCurrentPageMarks();
-    console.log(allmarks)
     if (!allmarks || !allmarks.marks || allmarks.marks.length === 0) {
         return true;
     }
@@ -94,31 +93,31 @@ function renderAll() {
  * @param allRmHandler 
  */
 function remove(id: string, allRmHandler?: (clear: Function, marks: MarkInfo[]) => void) {
-    const allMarks = getCurrentPageMarks()
+    const allMarks = getCurrentPageMarks();
     allMarks.marks.some(item => {
         if (id === item.id && !item.unused) {
-            const elems = document.getElementsByClassName(id)
+            const elems = document.getElementsByClassName(id);
             // 删除class
             const elemArr: HTMLElement[] = Array.prototype.slice.call(elems);
             elemArr.forEach(elem => elem.setAttribute('class', id));
             item.unused = true;
             return true;
         }
-    })
+    });
 
     if (allMarks.marks.every(item => item.unused)) {
         if (allRmHandler) {
             allRmHandler(() => {
                 allMarks.marks = [];
-                removeAll({domain: false, retainTexts: false})
-            }, allMarks.marks)
+                removeAll({domain: false, retainTexts: false});
+            }, allMarks.marks);
         } else {
-            removeAll({domain: false, retainTexts: false})
+            removeAll({domain: false, retainTexts: false});
         }
     } else {
         const {pageHash} = config;
         const hash = pageHash(window.location.href);
-        window.localStorage.setItem(hash, JSON.stringify(allMarks))
+        window.localStorage.setItem(hash, JSON.stringify(allMarks));
     }
 }
 
@@ -164,7 +163,7 @@ interface RemoveAllOpt {
  * @param params 
  */
 function removeAll(options: RemoveAllOpt = {}) {
-    const {domain, retainTexts} = ({domain: false, retainTexts: false, ...options})
+    const {domain, retainTexts} = ({domain: false, retainTexts: false, ...options});
     const pageHash = config.pageHash(window.location.href);
     let markSet: MarkInfo[] = [];
     Object.keys(localStorage)
@@ -177,23 +176,23 @@ function removeAll(options: RemoveAllOpt = {}) {
         })
         .forEach(key => {
             try {
-                const marks: MarkInfo[] = JSON.parse(localStorage.getItem(key) || '{}').marks
+                const marks: MarkInfo[] = JSON.parse(localStorage.getItem(key) || '{}').marks;
                 markSet = markSet.concat(marks);
                 if (retainTexts) { // 保存文本备份
-                    const historys = JSON.parse(localStorage.getItem(`history_${pageHashPrefix}`) || '[]')
+                    const historys = JSON.parse(localStorage.getItem(`history_${pageHashPrefix}`) || '[]');
                     localStorage.setItem(
                         `history_${pageHashPrefix}`,
                         JSON.stringify(historys.concat(marks.map(item => item.text)))
-                    )
+                    );
                 }
             } catch (error) {
-                console.error(error)
+                console.error(error);
             }
             localStorage.removeItem(key);
-            delete MarkStore[key]
+            delete MarkStore[key];
         });
     // 清除页面副作用的方式
-    clearDomSideEffect(markSet)
+    clearDomSideEffect(markSet);
 }
 
 /**
@@ -211,9 +210,9 @@ setAfterMark((mi: MarkInfo) => {
             pageInfo: getPageInfo()
         }
     } else {
-        MarkStore[hash].marks.push(storeMi)
+        MarkStore[hash].marks.push(storeMi);
     }
-    window.localStorage.setItem(hash, JSON.stringify(MarkStore[hash]))
+    window.localStorage.setItem(hash, JSON.stringify(MarkStore[hash]));
 })
 export {
     Config,

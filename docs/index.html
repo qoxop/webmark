@@ -13,8 +13,8 @@
         <div>
             <h1 id="webmark" data-source-line="1"><a class="markdownIt-Anchor" href="#webmark"></a>webmark</h1>
             <p data-source-line="3">简单易用的网页文本标记工具。</p>
-            <p data-source-line="5">标记原理是使用<code>window.getSelection</code> API 获取到选中的文本节点，并包裹一层自定义的标签(默认是&lt;marks
-                class="qoxop_highlight" /&gt;), 默认标签名和样式名可以通过 <code>init</code> 或 <code>setConfig</code> 方法修改。</p>
+            <p data-source-line="5">标记原理是使用<code>window.getSelection</code> API 获取到选中的文本节点，并包裹一层自定义的标签(默认是<code>&lt;marks
+                class="qoxop_highlight" /&gt;</code>), 默认标签名和样式名可以通过 <code>init</code> 或 <code>setConfig</code> 方法修改。</p>
             <p data-source-line="7">
                 <strong>说明</strong>：默认使用<code>localStorage</code>对<code>mark数据</code>进行存储管理。由于同一个域下一般存在多个页面(或者一些spa的场景)，所以每一个页面的<code>mark数据</code>对应<code>localStorage</code>的某一项。如果不想使用存储功能可以直接引入
                 <code>webmark/lib/core.js</code>文件。</p>
@@ -170,7 +170,14 @@
             green
         </div>
     </div>
-    <script src="./test.js"></script>
+    <div id="clear_marks_btn">
+        清空标记
+    </div>
+    <div id="del_mark_btn">
+        删除
+    </div>
+    <script src="./index.js"></script>
+    <script src="demo.js"></script>
 </body>
 
 </html>
