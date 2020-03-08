@@ -1,6 +1,6 @@
 {
   "name": "webmark",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "网页文本标记工具",
   "scripts": {
     "build": "gulp build",

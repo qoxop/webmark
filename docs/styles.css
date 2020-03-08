@@ -64,7 +64,7 @@ marks.mark_default,
     background-color: yellow !important;
 }
 
-marks_red,
+marks.mark_red,
 .mark_red::before {
     background-color: rgba(247, 48, 48, 0.8) !important;
     ;
