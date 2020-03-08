@@ -53,7 +53,7 @@ function getCurrentPageMarks() {
  * @param options 
  */
 function setConfig(options: Config = {}) {
-    const obj = Object.assign({markTagName: 'span', defaultClassName: 'qoxop_highlight'}, options)
+    const obj = Object.assign({markTagName: 'marks', defaultClassName: 'qoxop_highlight'}, options)
     Object.keys(obj).forEach(key => {
         const value = obj[key];
         if (key === 'markTagName') {

@@ -2,21 +2,25 @@
 
 简单易用的网页文本标记工具。
 
-标记原理是使用`window.getSelection` API 获取到选中的文本节点，并包裹一层自定义的标签(默认是<marks class="qoxop_highlight" />), 默认标签名和样式名可以通过 `init` 或 `setConfig` 方法修改。
+标记原理是使用`window.getSelection` API 获取到选中的文本节点，并包裹一层自定义的标签(默认标签是`marks`,类名是`qoxop_highlight`), 默认标签名和样式名可以通过 `init` 或 `setConfig` 方法修改。
 
 **说明**：默认使用`localStorage`对`mark数据`进行存储管理。由于同一个域下一般存在多个页面(或者一些spa的场景)，所以每一个页面的`mark数据`对应`localStorage`的某一项。如果不想使用存储功能可以直接引入 `webmark/lib/core.js`文件。
 
-
+[example](https://qoxop.github.io/webmark/)
 
 ## 安装
 
 使用`npm`
 ```
 npm install webmark --save
+
+// import * as webmark from 'webmark'
 ```
 使用浏览器, 下载 [webmark.js](http://files.codcats.com/webmark.js) 直接在html中引入
 ```html
  <script src="./webmark.js"></script>
+
+ // window.webmark  {setConfig, init, mark, remove, removeAll, renderAll, query}
 ```
 
 

@@ -1,9 +1,10 @@
 {
   "name": "webmark",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "网页文本标记工具",
   "scripts": {
-    "build": "gulp",
+    "build": "gulp build",
+    "pub": "gulp publish",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -21,7 +22,6 @@
     "url": "https://github.com/qoxop/webmark/issues"
   },
   "files": [
-    "dist",
     "lib",
     "es"
   ],

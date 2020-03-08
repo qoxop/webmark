@@ -45,7 +45,7 @@
 
   function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
-  var CustomTagName = 'span';
+  var CustomTagName = 'marks';
   var HighLightClass = 'qoxop_highlight';
   /**
    * 获取首尾节点的字符串，用于校验标记是否作废
@@ -348,7 +348,7 @@
   function setConfig() {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var obj = Object.assign({
-      markTagName: 'span',
+      markTagName: 'marks',
       defaultClassName: 'qoxop_highlight'
     }, options);
     Object.keys(obj).forEach(function (key) {

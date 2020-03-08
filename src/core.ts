@@ -1,7 +1,7 @@
 
 import {MarkInfo, MarkOptions, SelectionInfo} from './types';
 
-let CustomTagName = 'span';
+let CustomTagName = 'marks';
 let HighLightClass = 'qoxop_highlight';
 
 /**
