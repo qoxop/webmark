@@ -16,7 +16,7 @@ npm install webmark --save
 
 // import * as webmark from 'webmark'
 ```
-使用浏览器, 下载 [webmark.js](http://files.codcats.com/webmark.js) 直接在html中引入
+使用浏览器, 下载 [webmark.js](http://files.codcats.com/2020_03_08/webmark.js) 直接在html中引入
 ```html
  <script src="./webmark.js"></script>
 
