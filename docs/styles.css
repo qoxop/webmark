@@ -59,24 +59,24 @@
     border-radius: 2px;
 }
 
-span.mark_default,
+marks.mark_default,
 .mark_default::before {
     background-color: yellow !important;
 }
 
-span.mark_red,
+marks_red,
 .mark_red::before {
     background-color: rgba(247, 48, 48, 0.8) !important;
     ;
 }
 
-span.mark_green,
+marks.mark_green,
 .mark_green::before {
     background-color: rgba(19, 160, 19, 0.8) !important;
     ;
 }
 
-span.mark_blue,
+marks.mark_blue,
 .mark_blue::before {
     background-color: rgba(63, 81, 188, 0.8) !important;
     ;
