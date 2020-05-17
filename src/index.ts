@@ -2,7 +2,7 @@ import mark from './core';
 import {setConfig, Config, remove, removeAll, renderAll, query} from './localManager';
 
 const DOMContentLoaded = new Promise(resolve => {
-    window.addEventListener('DOMContentLoaded', function() {
+    window.addEventListener('load', function() {
         const styleElement = document.createElement('style');
         styleElement.innerHTML = `.qoxop_highlight {background: #f3f308;}`;
         document.head.appendChild(styleElement);
